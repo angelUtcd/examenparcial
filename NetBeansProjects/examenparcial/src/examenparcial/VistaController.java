@@ -1,16 +1,11 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package examenparcial;
-
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -23,18 +18,16 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
-
-/**
- *
- * @author angel
- */
 public class VistaController implements Initializable {
     EntityManagerFactory emf=Persistence.createEntityManagerFactory("examenparcialPU");
     javax.persistence.EntityManager em =emf.createEntityManager();
-    
+     private final ListChangeListener<Personajes> selectortablaPersona = (ListChangeListener.Change<? extends Personajes> c) -> {
+        seleccionardate();
+    };
     ObservableList<Personajes>lista=FXCollections.observableArrayList();
     private int posicionPersonajeenTabla;
     @FXML
@@ -92,11 +85,11 @@ public class VistaController implements Initializable {
         Platform.runLater(() ->{
         this.initiardatos();
         });
-    }
+    }    
     @FXML
     private void eliminar() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("ELIMINAR PROFESORES");
+        alert.setTitle("ELIMINAR P ERSONAJES");
         alert.setHeaderText("ALERTA, ALERTA, ALERTA");
         alert.setContentText("Estás seguro de eliminar el registro?");
 
@@ -114,11 +107,6 @@ public class VistaController implements Initializable {
             System.out.println("NO");
         }
 
-        
-    }
-
-    private void ponerPersonajeSeleccionada(){
-        final Personajes persona = gettablapersonaSeleccionada();
         
     }
     @FXML
@@ -167,5 +155,21 @@ public class VistaController implements Initializable {
         nombreTF.setText(persona.getNombre());
         modificarBT.setDisable(false);
         eliminarBT.setDisable(false);
+    }
+    @FXML
+    private void seleccionardate(){
+        final Personajes persona = gettablapersonaSeleccionada();
+        posicionPersonajeenTabla = lista.indexOf(persona);
+        if (persona != null) {
+            nombreTF.setText(persona.getNombre());
+            aliasTF.setText(persona.getAlias());
+            poderTF.setText(persona.getPoder());
+            direccionTF.setText(persona.getDireccion());
+            telefonoTF.setText(persona.getTelefono());
+            correoTF.setText(persona.getCorreo());
+            modificarBT.setDisable(false);
+            eliminarBT.setDisable(false);
+            aniadirBT.setDisable(true);
+        } 
     }
 }
