@@ -1,4 +1,6 @@
 package examenparcial;
+import com.sun.glass.events.KeyEvent;
+import java.awt.Component;
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
@@ -22,12 +24,14 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
+import javax.swing.JOptionPane;
 public class VistaController implements Initializable {
     EntityManagerFactory emf=Persistence.createEntityManagerFactory("examenparcialPU");
     javax.persistence.EntityManager em =emf.createEntityManager();
      private final ListChangeListener<Personajes> selectortablaPersona = (ListChangeListener.Change<? extends Personajes> c) -> {
         seleccionardate();
     };
+     public Personajes persona = new Personajes();
     ObservableList<Personajes>lista=FXCollections.observableArrayList();
     private int posicionPersonajeenTabla;
     @FXML
@@ -54,19 +58,23 @@ public class VistaController implements Initializable {
     @FXML private Button buscarBT;
     @FXML
     private void aniadir(){
-        em.getTransaction().begin();
-        Personajes persona = new Personajes();
-        persona.setNombre(nombreTF.getText());
-        persona.setAlias(aliasTF.getText());
-        persona.setPoder(poderTF.getText());
-        persona.setDireccion(direccionTF.getText());
-        persona.setTelefono(telefonoTF.getText());
-        persona.setCorreo(correoTF.getText());
-        em.persist(persona);
-        em.getTransaction().commit(); 
+        try {
+            em.getTransaction().begin();
+            Personajes persona = new Personajes();
+            persona.setNombre(nombreTF.getText());
+            persona.setAlias(aliasTF.getText());
+            persona.setPoder(poderTF.getText());
+            persona.setDireccion(direccionTF.getText());
+            persona.setTelefono(telefonoTF.getText());
+            persona.setCorreo(correoTF.getText());
+            em.persist(persona);
+            em.getTransaction().commit(); 
          Platform.runLater(() ->{
         this.initiardatos();
         });
+        } catch (Exception e) {
+            System.out.println("Error"+e);
+        }
     }
     public Personajes gettablapersonaSeleccionada(){
         if (tablapersona != null) {
@@ -80,38 +88,56 @@ public class VistaController implements Initializable {
     }
     @FXML
     private void modificar(ActionEvent event){
-        em.getTransaction().begin();
+        try {
+            em.getTransaction().begin();
+        Personajes a = persona;
+        System.out.println("nombre: "+ persona.getNombre());
+        a.setNombre(nombreTF.getText());
+        a.setAlias(aliasTF.getText());
+        a.setPoder(poderTF.getText());
+        a.setDireccion(direccionTF.getText());
+        a.setTelefono(telefonoTF.getText());
+        a.setCorreo(correoTF.getText());
+        em.merge(a);
         em.getTransaction().commit();
         Platform.runLater(() ->{
         this.initiardatos();
         });
+        } catch (Exception e) {
+            System.out.println("Error"+e);
+        }
     }    
     @FXML
     private void eliminar() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("ELIMINAR P ERSONAJES");
+        alert.setTitle("ELIMINAR PERSONAJES");
         alert.setHeaderText("ALERTA, ALERTA, ALERTA");
         alert.setContentText("Estás seguro de eliminar el registro?");
 
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.get() == ButtonType.OK) {
+        try {
+             Optional<ButtonType> result = alert.showAndWait();
+            if (result.get() == ButtonType.OK) {
             em.getTransaction().begin();
-        Personajes p = tablapersona.getSelectionModel().getSelectedItem();
-        System.out.println("Se ha seleccionado: " + p.getNombre());
-        em.remove(p);
-        em.getTransaction().commit();
-        Platform.runLater(() -> {
+            Personajes p = tablapersona.getSelectionModel().getSelectedItem();
+            System.out.println("Se ha seleccionado: " + p.getNombre());
+            em.remove(p);
+            em.getTransaction().commit();
+            Platform.runLater(() -> {
             this.initiardatos();
-        });
+            });
         } else {
             System.out.println("NO");
         }
-
+        } catch (Exception e) {
+            System.out.println("ERROR"+ e);
+        }
+       
         
     }
     @FXML
     private void nuevo(ActionEvent event){
-        nombreTF.setText("");
+        try {
+            nombreTF.setText("");
         aliasTF.setText("");
         poderTF.setText("");
         direccionTF.setText("");
@@ -120,6 +146,9 @@ public class VistaController implements Initializable {
         modificarBT.setDisable(true);
         eliminarBT.setDisable(true);
         aniadirBT.setDisable(false);
+        } catch (Exception e) {
+            System.out.println("Error"+e);
+        }
     }
     
     
@@ -149,6 +178,7 @@ public class VistaController implements Initializable {
         lista.addAll(consulta.getResultList());
         
     }
+    
     public void modificarlista(){
         Personajes persona = tablapersona.getSelectionModel().getSelectedItem();
         System.out.println("Nombre: " + persona.getNombre());
@@ -158,7 +188,8 @@ public class VistaController implements Initializable {
     }
     @FXML
     private void seleccionardate(){
-        final Personajes persona = gettablapersonaSeleccionada();
+         persona = gettablapersonaSeleccionada();
+         System.out.println("nombre : ");
         posicionPersonajeenTabla = lista.indexOf(persona);
         if (persona != null) {
             nombreTF.setText(persona.getNombre());
@@ -171,5 +202,34 @@ public class VistaController implements Initializable {
             eliminarBT.setDisable(false);
             aniadirBT.setDisable(true);
         } 
+    }
+    public void keyPressed(KeyEvent e){
+                if(e.hashCode()==KeyEvent.VK_ENTER){
+                    Component contentPane = null;
+                    JOptionPane.showMessageDialog(contentPane, "Has pulsado Enter");
+                }
+                if(e.hashCode()==KeyEvent.VK_ESCAPE){
+                    System.exit(0);
+                }
+            }
+    @FXML
+    public void nombre(ActionEvent e){
+        aliasTF.requestFocus();
+    }
+    @FXML
+    public void alias(){
+        poderTF.requestFocus();
+    }
+    @FXML
+    public void poder(){
+        direccionTF.requestFocus();
+    }
+    @FXML
+    public void direccion(){
+        telefonoTF.requestFocus();
+    }
+    @FXML
+    public void telefono(){
+        correoTF.requestFocus();
     }
 }
